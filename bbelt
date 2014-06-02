@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+/**
+ * Created by root on 02/06/14.
+ */
+
+var fs = require("fs");
+var path = require("path");
+
+var tools = [];
+initTools();
+chooseTool();
+
+function chooseTool(){
+    var tool = null;
+    for(var i = 0 ;i < tools.length; i++)
+    {
+        if(process.argv[2] == tools[i][0])
+        {
+            tool = tools[i];
+        }
+    }
+    if(!tool) {
+        console.log("No tool specified");
+        //process.exit(1);
+    }
+    else
+    {
+        var args = process.argv.splice();
+        tool[1]();
+    }
+
+}
+function addTool(name, fun){
+    tools.push([name, fun]);
+}
+function initTools()
+{
+    var toolList = (fs.readdirSync(path.join(__dirname, "tools")));
+    for(var i = 0 ; i < toolList.length; i++)
+    {
+        (function(){
+            var name = path.join(__dirname, "tools", toolList[i]);
+            addTool(toolList[i].split(".")[0], function(){ require(name)});
+        }());
+    }
+    //
+}
