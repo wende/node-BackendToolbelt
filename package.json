@@ -1,0 +1,26 @@
+{
+  "name": "backend_toolbelt",
+  "version": "0.1.0",
+  "description": "\"Toolbelt for backend developers\"",
+  "main": "bbelt.js",
+  "dependencies": {
+    "framecut": "^0.2.0"
+  },
+  "bin": {
+    "bbelt": "bbelt"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iraasta/node-BackendToolbelt.git"
+  },
+  "author": "iraasta",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iraasta/node-BackendToolbelt/issues"
+  },
+  "homepage": "https://github.com/iraasta/node-BackendToolbelt"
+}
