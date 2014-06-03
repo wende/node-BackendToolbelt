@@ -30,7 +30,7 @@ function start() {
     var client = net.createConnection(parseInt(port), ip, function()
     {
         console.log("Success");
-        startAskingQuestions();
+        startAskingQuestions(client);
     });
     console.log("Connecting... ");
     client.on("data", function(data)
@@ -49,17 +49,78 @@ function start() {
         quit("No connection");
     })
 }
-function handleMessage(msg){
+function handleMessage(msg) {
     var now = new Date();
     var date = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
-    console.log(date + " => " + msg);
+
+    var displayable = false;
+    for (var i = 0; i < msg.length; i++)
+    {
+        if(msg[i] < 33)
+        {
+            displayable = true;
+            break;
+        }
+    }
+
+    if( displayable) console.log(date + " => " + msg.toString());
+    else console.log(date + " => " + msg.toJSON());
 }
-function startAskingQuestions()
+function startAskingQuestions(client)
 {
     rl.question("> ", function (answer) {
-        console.log(answer.toString());
-        startAskingQuestions();
+        client.write(processReq(answer));
+        startAskingQuestions(client);
     })
+}
+function processReq(req)
+{
+    var phrases = req.split(/[\(|\)]+/);
+
+    var counter = 0;
+    phrases.forEach(function(x){
+        if(x.indexOf("#") == -1) counter += x.length;
+        else counter += parseInt(x.split('u')[1].split("#")[0]);
+    });
+    var buffer = new Buffer(counter);
+
+    phrases.forEach(function(x){
+        if(x == "") return;
+        if(x.indexOf("#") != 1)
+        {
+            counter -= x.length;
+            buffer.write(x, counter);
+        }
+        else
+        {
+            var unsigned = false;
+            var cake = x.split("#");
+            if(cake[0][0] == "u" || cake[0][0] == "U"){
+                unsigned = true;
+                cake[0] = cake[0].split(/u|U/)[0];
+            }
+            var arity = parseInt(cake[0]);
+            counter -= arity;
+            var num = parseInt(cake[1]);
+
+            if(unsigned)switch(arity)
+            {
+                case 1: buffer.writeUInt8(num, counter); break;
+                case 2: buffer.writeUInt16BE(num, counter); break;
+                case 4: buffer.writeUInt32BE(num, counter); break;
+                default: throw new Error("Wrong arity");
+            }
+            else switch(arity)
+            {
+                case 1: buffer.writeInt8(num, counter); break;
+                case 2: buffer.writeInt16BE(num, counter); break;
+                case 4: buffer.writeInt32BE(num, counter); break;
+                default: throw new Error("Wrong arity");
+            }
+
+        }
+    });
+    return buffer;
 }
 
 //HELPER FUNCTIONS
@@ -85,8 +146,7 @@ function findNextOpt(opt)
     }
     return process.argv[process.argv.indexOf(opt) + 1]
 }
-function quit(msg)
-{
+function quit(msg) {
     console.log(msg);
     process.exit(1);
 }
