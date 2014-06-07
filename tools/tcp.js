@@ -69,61 +69,79 @@ function handleMessage(msg) {
 function startAskingQuestions(client)
 {
     rl.question("> ", function (answer) {
-        client.write(processReq(answer));
+        client.write(processReq(answer, !!delimitByLength, delimiter));
         startAskingQuestions(client);
     })
 }
-function processReq(req)
-{
+function processReq(req, byLength, delimiter) {
     var phrases = req.split(/[\(|\)]+/);
 
-    var counter = 0;
-    phrases.forEach(function(x){
-        if(x.indexOf("#") == -1) counter += x.length;
-        else counter += parseInt(x.split('u')[1].split("#")[0]);
+    var counter = 1;
+    phrases.forEach(function (x) {
+        if (x.indexOf("#") == -1) counter += x.length;
+        else counter += parseInt(x.split('#')[0]);
     });
     var buffer = new Buffer(counter);
+    if(byLength)
+    {
+        buffer.writeInt8(counter-1, 0);
+        counter = 1;
+    }
+    else
+    {
+        buffer.write(delimiter, counter-1);
+        counter = 0;
+    }
 
-    phrases.forEach(function(x){
-        if(x == "") return;
-        if(x.indexOf("#") != 1)
-        {
-            counter -= x.length;
+    phrases.forEach(function (x) {
+        console.log(x);
+        if (x == "") return;
+        if (x.indexOf("#") != 1) {
             buffer.write(x, counter);
+            counter += x.length;
         }
-        else
-        {
+        else {
             var unsigned = false;
             var cake = x.split("#");
-            if(cake[0][0] == "u" || cake[0][0] == "U"){
+            if (cake[1][0] == "u") {
                 unsigned = true;
-                cake[0] = cake[0].split(/u|U/)[0];
+                cake[1] = cake[1].split("u")[0];
             }
             var arity = parseInt(cake[0]);
-            counter -= arity;
             var num = parseInt(cake[1]);
 
-            if(unsigned)switch(arity)
-            {
-                case 1: buffer.writeUInt8(num, counter); break;
-                case 2: buffer.writeUInt16BE(num, counter); break;
-                case 4: buffer.writeUInt32BE(num, counter); break;
-                default: throw new Error("Wrong arity");
+            if (unsigned)switch (arity) {
+                case 1:
+                    buffer.writeUInt8(num, counter);
+                    break;
+                case 2:
+                    buffer.writeUInt16BE(num, counter);
+                    break;
+                case 4:
+                    buffer.writeUInt32BE(num, counter);
+                    break;
+                default:
+                    throw new Error("Wrong arity");
             }
-            else switch(arity)
-            {
-                case 1: buffer.writeInt8(num, counter); break;
-                case 2: buffer.writeInt16BE(num, counter); break;
-                case 4: buffer.writeInt32BE(num, counter); break;
-                default: throw new Error("Wrong arity");
+            else switch (arity) {
+                case 1:
+                    buffer.writeInt8(num, counter);
+                    break;
+                case 2:
+                    buffer.writeInt16BE(num, counter);
+                    break;
+                case 4:
+                    buffer.writeInt32BE(num, counter);
+                    break;
+                default:
+                    throw new Error("Wrong arity");
             }
-
+            counter += arity;
         }
     });
     return buffer;
 }
 
-//HELPER FUNCTIONS
 
 function getFirstOpt()
 {
