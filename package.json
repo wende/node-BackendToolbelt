@@ -1,6 +1,6 @@
 {
   "name": "backend_toolbelt",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "\"Toolbelt for backend developers\"",
   "main": "bbelt.js",
   "dependencies": {
