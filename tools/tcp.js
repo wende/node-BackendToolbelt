@@ -94,7 +94,6 @@ function processReq(req, byLength, delimiter) {
     }
 
     phrases.forEach(function (x) {
-        console.log(x);
         if (x == "") return;
         if (x.indexOf("#") != 1) {
             buffer.write(x, counter);
