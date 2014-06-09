@@ -74,7 +74,7 @@ function startAskingQuestions(client)
     })
 }
 function processReq(req, byLength, delimiter) {
-    var phrases = req.split(/[\(|\)]+/);
+    var phrases = req.split(/[\(\)]+/);
 
     var counter = 1;
     phrases.forEach(function (x) {
